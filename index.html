@@ -3,8 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>隱私防護圖片轉換器</title>
+    
+    <title>隱私圖片轉換器 | PNG 轉 JPG | 100% 本地處理不留痕跡</title>
+    <meta name="description" content="最安全的線上圖片轉換工具。所有 PNG 轉 JPG 程序均在您的瀏覽器本地完成，檔案絕不離開您的裝置，完全斷網亦可使用。支援批次轉換與 ZIP 打包下載。">
+    <meta name="keywords" content="PNG轉JPG, 圖片轉換, 隱私保護, 本地處理, 免費工具, 批次轉換, 檔案安全">
+    <meta name="author" content="Gentleman-Text">
+    
+    <meta name="theme-color" content="#4A90E2">
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    
     <style>
         :root {
             --primary: #4A90E2;
@@ -51,7 +59,6 @@
             margin-bottom: 10px;
         }
 
-        /* 響應式沙盒區域 */
         .sandbox {
             border: 2px dashed #d1d9e6;
             background: #fafcfe;
@@ -77,7 +84,6 @@
             border-left: 4px solid #ffc107;
         }
 
-        /* 按鈕組：手機端垂直，電腦端可並排 */
         .btn-group { display: flex; flex-direction: column; gap: 12px; margin-top: 20px; }
         
         button {
@@ -95,7 +101,6 @@
         .btn-outline { background: #f0f2f5; color: #555; }
         .btn-danger { background: var(--danger); color: white; margin-top: 30px; }
 
-        /* 檔案清單明細 */
         .file-list {
             margin-top: 15px;
             border: 1px solid #eee;
@@ -116,7 +121,6 @@
         .file-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 70%; }
         .download-icon { text-decoration: none; font-size: 18px; }
 
-        /* 電腦端優化：螢幕寬度超過 480px 時 */
         @media (min-width: 480px) {
             .btn-row { flex-direction: row; }
             .btn-row button { flex: 1; }
@@ -126,15 +130,20 @@
 <body>
 
 <div class="container">
+    <nav style="margin-bottom: 20px; font-size: 14px;">
+        <a href="index.html" style="color: var(--primary); text-decoration: none;">← 返回首頁</a>
+    </nav>
+
     <div class="header">
-        <div class="badge">🔒 本地加密環境</div>
+        <div class="badge">🔒 本地加密處理環境</div>
         <h2 style="margin:5px 0;">PNG 轉 JPG</h2>
-        <p style="font-size:14px; color:#777;">檔案不會上傳，隱私絕對安全</p>
+        <p style="font-size:14px; color:#777;">您的隱私是我們的首要任務</p>
     </div>
 
-    <div class="sandbox">
-        <input type="file" id="fileInput" accept="image/png" multiple>
-        <p style="font-size:13px; color:#999; margin-top:8px;">支援手機相簿與電腦檔案多選</p>
+    <div class="sandbox" onclick="document.getElementById('fileInput').click()">
+        <input type="file" id="fileInput" accept="image/png" multiple style="display: none;">
+        <p style="font-size:15px; color:var(--primary); font-weight:bold;">點擊上傳 PNG 檔案</p>
+        <p style="font-size:12px; color:#999; margin-top:5px;">支援多選，檔案絕不離開此設備</p>
     </div>
 
     <div id="status" class="status-msg"></div>
@@ -143,7 +152,7 @@
         <button id="convertBtn" class="btn-main">🚀 開始轉換</button>
         
         <div id="resultBtns" style="display: none;" class="btn-group">
-            <div class="btn-group" style="flex-direction: row; gap: 10px;">
+            <div style="display:flex; gap: 10px;">
                 <button id="zipBtn" class="btn-main" style="flex: 2;">📦 打包下載 ZIP</button>
                 <button id="toggleList" class="btn-outline" style="flex: 1;">🔍 明細</button>
             </div>
@@ -151,7 +160,6 @@
     </div>
 
     <div id="fileList" class="file-list"></div>
-    
     <button id="clearBtn" class="btn-danger" style="display:none;">🗑️ 銷毀暫存並重新開始</button>
 </div>
 
@@ -169,12 +177,8 @@
 
     convertBtn.addEventListener('click', async () => {
         const files = fileInput.files;
-        if (files.length === 0) {
-            alert("請先選擇 PNG 圖片");
-            return;
-        }
+        if (files.length === 0) return alert("請先選擇圖片");
 
-        // 初始化介面
         status.style.display = 'block';
         resultBtns.style.display = 'none';
         fileList.style.display = 'none';
@@ -183,31 +187,24 @@
 
         for (let i = 0; i < files.length; i++) {
             const file = files[i];
-            
-            // 更新進度與字樣
-            status.innerHTML = `⚙️ 正在處理 (${i + 1}/${files.length}): <br><strong>${file.name}</strong><br>
-                                <small>此工具為本地加載及轉換，耗時時間因設備會有所差異，請耐心等候。</small>`;
+            status.innerHTML = `⚙️ 正在本地處理 (${i + 1}/${files.length}): <br><strong>${file.name}</strong><br>
+                                <small>此工具為本地加載及轉換，耗時因設備而異...</small>`;
             
             try {
                 const jpgBlob = await convertImage(file);
-                // 保留檔名，只換副檔名
                 const newName = file.name.replace(/\.[^/.]+$/, "") + ".jpg";
-                
                 processedFiles.push({ name: newName, blob: jpgBlob });
-                
-                // 建立清單項目
                 addToListUI(newName, jpgBlob);
             } catch (err) {
                 console.error("轉換失敗:", file.name);
             }
         }
 
-        status.innerHTML = "✅ 轉換完成！所有動作均在您的裝置本地執行。";
+        status.innerHTML = "✅ 轉換完成！所有程序均在本地執行，您可以安心下載。";
         resultBtns.style.display = 'flex';
         clearBtn.style.display = 'block';
     });
 
-    // 核心畫布轉換函數
     function convertImage(file) {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
@@ -215,10 +212,8 @@
                 const img = new Image();
                 img.onload = () => {
                     const canvas = document.createElement('canvas');
-                    canvas.width = img.width;
-                    canvas.height = img.height;
+                    canvas.width = img.width; canvas.height = img.height;
                     const ctx = canvas.getContext('2d');
-                    // 填寫白色底色，避免透明 PNG 轉 JPG 變黑色
                     ctx.fillStyle = "#FFFFFF";
                     ctx.fillRect(0, 0, canvas.width, canvas.height);
                     ctx.drawImage(img, 0, 0);
@@ -232,43 +227,31 @@
         });
     }
 
-    // 建立明細 UI (文字清單模式)
     function addToListUI(name, blob) {
         const url = URL.createObjectURL(blob);
         const div = document.createElement('div');
         div.className = 'file-item';
-        div.innerHTML = `
-            <span class="file-name">${name}</span>
-            <a href="${url}" download="${name}" class="download-icon">📥</a>
-        `;
+        div.innerHTML = `<span class="file-name">${name}</span><a href="${url}" download="${name}" class="download-icon">📥</a>`;
         fileList.appendChild(div);
     }
 
-    // ZIP 打包下載
     zipBtn.addEventListener('click', async () => {
         const zip = new JSZip();
-        processedFiles.forEach(f => {
-            zip.file(f.name, f.blob);
-        });
+        processedFiles.forEach(f => zip.file(f.name, f.blob));
         const zipContent = await zip.generateAsync({type: "blob"});
         const link = document.createElement('a');
         link.href = URL.createObjectURL(zipContent);
-        link.download = "converted_images.zip";
+        link.download = "privacy_images.zip";
         link.click();
     });
 
-    // 明細開關
     toggleList.addEventListener('click', () => {
         fileList.style.display = (fileList.style.display === 'none' || fileList.style.display === '') ? 'block' : 'none';
     });
 
-    // 垃圾桶銷毀功能
     clearBtn.addEventListener('click', () => {
-        if(confirm("確定要銷毀所有暫存數據並重新開始嗎？")) {
-            location.reload(); 
-        }
+        if(confirm("確定要銷毀所有記憶體暫存嗎？")) location.reload(); 
     });
 </script>
-
 </body>
 </html>
